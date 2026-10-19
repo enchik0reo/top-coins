@@ -1,0 +1,27 @@
+version: '3'
+
+tasks:
+  infra:up:
+    desc: "Start infrastructure in docker compose (PostgreSQL, Redis, Kafka)"
+    cmd: docker compose -f deployments/docker-compose.infra.yml up -d
+
+  infra:down:
+    desc: "Stop infrastructure in docker compose"
+    cmd: docker compose -f deployments/docker-compose.infra.yml down
+
+  services:up:
+    desc: "Start services in docker compose"
+    cmd: docker compose -f deployments/docker-compose.services.yml up -d --build
+
+  services:down:
+    desc: "Stop services in docker compose"
+    cmd: docker compose -f deployments/docker-compose.services.yml down
+ 
+  app:up:
+    desc: "Start full application in docker compose"
+    cmd: docker compose -f deployments/docker-compose.infra.yml -f docker-compose.services.yml up -d --build
+
+  app:down:
+    desc: "Stop full application in docker compose"
+    cmd: docker compose -f deployments/docker-compose.infra.yml -f docker-compose.services.yml down
+
