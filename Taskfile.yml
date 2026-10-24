@@ -24,4 +24,3 @@ tasks:
   app:down:
     desc: "Stop full application in docker compose"
     cmd: docker compose -f deployments/docker-compose.infra.yml -f docker-compose.services.yml down
-
