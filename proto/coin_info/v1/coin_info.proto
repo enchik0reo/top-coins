@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package coininfo;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pkg/api/proto/v1;coin_infov1";
+
+service CoinInfoService {
+  rpc GetLastCoin (GetLastCoinRequest) returns (GetLastCoinResponse);
+  rpc GetCoinHistory (GetCoinHistoryRequest) returns (GetCoinHistoryResponse);
+}
+
+message Coin {
+  string id = 1;
+  string name = 2;
+  uint64 price = 3;
+  string currency = 4;
+  string source = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message GetLastCoinRequest {
+  string id = 1;
+}
+
+message GetLastCoinResponse {
+  Coin coin = 1;
+}
+
+message GetCoinHistoryRequest {
+  string id = 1;
+  google.protobuf.Timestamp since_time = 2;
+}
+
+message GetCoinHistoryResponse {
+  repeated Coin history = 1;
+}

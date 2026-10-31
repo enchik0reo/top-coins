@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/top-coins/internal/logger"
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/logger"
+	"github.com/top-coins/pkg/models"
 )
 
 const binanceURL = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT" // {"symbol":"BTCUSDT","price":"79900.01000000"}
@@ -83,9 +84,10 @@ func (c *BinanceClient) mapCoin(info binanceCoinInfo) (models.CoinInfo, error) {
 	cents := uint64(f * 100)
 
 	return models.CoinInfo{
-		Name:     models.BitCoin,
-		Price:    cents,
-		Currency: models.CentsUSD,
-		Source:   models.Binance,
+		Name:      models.BitCoin,
+		Price:     cents,
+		Currency:  models.CentsUSD,
+		Source:    models.Binance,
+		CreatedAt: time.Now().UTC(),
 	}, nil
 }

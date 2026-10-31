@@ -1,10 +1,14 @@
 package models
 
+import "time"
+
 type CoinInfo struct {
-	Name     CoinName     `json:"name"`
-	Price    uint64       `json:"price"`
-	Currency CoinCurrency `json:"currency"`
-	Source   CoinSource   `json:"source"`
+	ID        string       `json:"id" db:"id"`
+	Name      CoinName     `json:"name" db:"name"`
+	Price     uint64       `json:"price" db:"price"`
+	Currency  CoinCurrency `json:"currency" db:"currency"`
+	Source    CoinSource   `json:"source" db:"source"`
+	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 }
 
 type CoinName string

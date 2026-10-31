@@ -5,7 +5,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/top-coins/internal/models"
+
+	"github.com/top-coins/pkg/models"
 )
 
 type SenderType string
@@ -15,15 +16,6 @@ const (
 	LocalStdout SenderType = "local"
 )
 
-type FetcherConfig struct {
-	Client HttpClient
-	Kafka  KafkaProducer
-	Sender SenderType `env:"FETCHER_SENDER" env-default:"local"`
-
-	Env         models.Environment `env:"ENVIRONMENT" env-default:"local"`
-	FetchTicker time.Duration      `env:"FETCH_TICKER" env-default:"60s"`
-}
-
 type KafkaProducer struct {
 	KafkaBrokers []string      `env:"KAFKA_BROKERS" env-default:"localhost:9092"`
 	KafkaTopic   string        `env:"KAFKA_TOPIC"`
@@ -32,7 +24,16 @@ type KafkaProducer struct {
 }
 
 type HttpClient struct {
-	Timeout time.Duration `env:"HTTP_TIMEOUT" env-default:"5s"`
+	Timeout time.Duration `env:"TIMEOUT" env-default:"5s"`
+}
+
+type FetcherConfig struct {
+	Client HttpClient
+	Kafka  KafkaProducer
+	Sender SenderType `env:"FETCHER_SENDER" env-default:"local"`
+
+	Env         models.Environment `env:"ENVIRONMENT" env-default:"local"`
+	FetchTicker time.Duration      `env:"FETCH_TICKER" env-default:"60s"`
 }
 
 func NewConfigFromEnv() (*FetcherConfig, error) {

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/top-coins/cmd/fetcher/internal/contract"
-	"github.com/top-coins/internal/logger"
+	"github.com/top-coins/pkg/logger"
 )
 
 var (

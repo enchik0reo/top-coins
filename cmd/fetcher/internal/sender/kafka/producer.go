@@ -9,7 +9,7 @@ import (
 	"github.com/segmentio/kafka-go"
 
 	"github.com/top-coins/cmd/fetcher/internal/config"
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/models"
 )
 
 type KafkaProducer struct {

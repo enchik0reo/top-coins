@@ -11,8 +11,8 @@ import (
 	"github.com/top-coins/cmd/fetcher/internal/config"
 	"github.com/top-coins/cmd/fetcher/internal/sender"
 	"github.com/top-coins/cmd/fetcher/internal/service"
-	"github.com/top-coins/internal/logger"
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/logger"
+	"github.com/top-coins/pkg/models"
 )
 
 type coinInfoCollector interface {

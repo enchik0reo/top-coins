@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/top-coins/internal/logger"
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/logger"
+	"github.com/top-coins/pkg/models"
 )
 
 const (
@@ -107,9 +108,10 @@ func (c *KrakenClient) mapCoin(info krakenCoinInfo) (models.CoinInfo, error) {
 	cents := uint64(f * 100)
 
 	return models.CoinInfo{
-		Name:     models.BitCoin,
-		Price:    cents,
-		Currency: models.CentsUSD,
-		Source:   models.Kraken,
+		Name:      models.BitCoin,
+		Price:     cents,
+		Currency:  models.CentsUSD,
+		Source:    models.Kraken,
+		CreatedAt: time.Now().UTC(),
 	}, nil
 }

@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
+
 	"github.com/top-coins/cmd/fetcher/internal/config"
 	"github.com/top-coins/cmd/fetcher/internal/sender/kafka"
 	"github.com/top-coins/cmd/fetcher/internal/sender/local"
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/models"
 )
 
 type CoinInfoSender interface {

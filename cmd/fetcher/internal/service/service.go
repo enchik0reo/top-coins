@@ -9,8 +9,8 @@ import (
 	cockrErr "github.com/cockroachdb/errors"
 
 	"github.com/top-coins/cmd/fetcher/internal/contract"
-	"github.com/top-coins/internal/logger"
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/logger"
+	"github.com/top-coins/pkg/models"
 )
 
 type CoinInfoCollector struct {

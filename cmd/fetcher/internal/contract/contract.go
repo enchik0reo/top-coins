@@ -3,7 +3,7 @@ package contract
 import (
 	"context"
 
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/models"
 )
 
 type CoinInfoFetcher interface {

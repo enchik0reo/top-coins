@@ -24,3 +24,12 @@ tasks:
   app:down:
     desc: "Stop full application in docker compose"
     cmd: docker compose -f deployments/docker-compose.infra.yml -f docker-compose.services.yml down
+
+  proto:
+    desc: "Generate Go Protobuf contract"
+    cmds:
+      - protoc --go_out=. --go-grpc_out=. proto/coin_info/v1/coin_info.proto
+    sources:
+      - proto/**/*.proto
+    generates:
+      - pkg/api/proto/**/*.go

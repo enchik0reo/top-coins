@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/top-coins/internal/models"
+	"github.com/top-coins/pkg/models"
 )
 
 type Logger struct {
