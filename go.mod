@@ -4,6 +4,9 @@ go 1.27.2
 
 require (
 	github.com/cockroachdb/errors v1.14.0
+	github.com/go-chi/chi v1.5.5
+	github.com/go-chi/chi/v5 v5.5.0
+	github.com/go-chi/cors v1.2.2
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/segmentio/kafka-go v0.4.51
 	google.golang.org/grpc v1.79.3

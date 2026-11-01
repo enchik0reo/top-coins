@@ -25,7 +25,7 @@ type coinbaseCoinInfo struct {
 type CoinbaseClient struct {
 	*CoinsClient
 	url string
-	log *logger.Logger
+	log *logger.CustomLogger
 }
 
 func newCoinbaseClient(cl *CoinsClient) *CoinbaseClient {
@@ -53,7 +53,7 @@ func (c *CoinbaseClient) FetchInfo(ctx context.Context) (models.CoinInfo, error)
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			c.log.Error("fail to close response body", "error", err, "fnName", fnName)
+			c.log.Error("Fail to close response body", c.log.Attr("error", err), c.log.Attr("fnName", fnName))
 		}
 	}()
 

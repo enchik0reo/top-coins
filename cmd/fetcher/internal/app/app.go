@@ -25,11 +25,12 @@ type coinInfoSender interface {
 }
 
 type App struct {
-	cfg    *config.FetcherConfig
-	logger *logger.Logger
+	cfg *config.FetcherConfig
 
 	infoCollector coinInfoCollector
 	infoSender    coinInfoSender
+
+	log *logger.CustomLogger
 }
 
 func New() *App {
@@ -43,17 +44,17 @@ func New() *App {
 	log := logger.NewSlogLogger(cfg.Env)
 
 	app := &App{
-		cfg:    cfg,
-		logger: log,
+		cfg: cfg,
+		log: log,
 	}
 
-	fetchers := client.NewCoinsClient(app.cfg.Client.Timeout, app.logger).BringFetchers()
+	fetchers := client.NewCoinsClient(app.cfg.Client.Timeout, app.log).BringFetchers()
 
-	app.infoCollector = service.NewCoinInfoCollector(app.cfg.FetchTicker, fetchers, app.logger)
+	app.infoCollector = service.NewCoinInfoCollector(app.cfg.FetchTicker, fetchers, app.log)
 
 	infoSender, err := sender.NewInfoSender(app.cfg)
 	if err != nil {
-		app.logger.Error("can't create info sender", "func", fnName)
+		app.log.Error("Can't create info sender", app.log.Attr("error", err), app.log.Attr("func", fnName))
 		os.Exit(1)
 	}
 
@@ -63,7 +64,7 @@ func New() *App {
 }
 
 func (a *App) MustRun() {
-	a.logger.Info("Fetcher service is running", "env", a.cfg.Env)
+	a.log.Info("Fetcher service is running", "env", a.cfg.Env)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -76,19 +77,19 @@ func (a *App) MustRun() {
 		}
 	}()
 
+	a.log.Info("Fetcher service runs")
+
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
-
-	a.logger.Info("Fetcher service runs")
-
 	<-stopCh
+
 	a.mustStop()
 }
 
 func (a *App) mustStop() {
-	a.logger.Info("Fetcher service is finishing")
+	a.log.Info("Fetcher service is finishing")
 
 	a.infoSender.Close()
 
-	a.logger.Info("Fetcher stopped gracefully")
+	a.log.Info("Fetcher stopped gracefully")
 }

@@ -16,10 +16,10 @@ import (
 type CoinInfoCollector struct {
 	tickTimeout time.Duration
 	fetchers    []contract.CoinInfoFetcher
-	log         *logger.Logger
+	log         *logger.CustomLogger
 }
 
-func NewCoinInfoCollector(ticker time.Duration, fetchers []contract.CoinInfoFetcher, logger *logger.Logger) *CoinInfoCollector {
+func NewCoinInfoCollector(ticker time.Duration, fetchers []contract.CoinInfoFetcher, logger *logger.CustomLogger) *CoinInfoCollector {
 	return &CoinInfoCollector{
 		tickTimeout: ticker,
 		fetchers:    fetchers,
@@ -40,7 +40,7 @@ func (c *CoinInfoCollector) StartCollect(ctx context.Context) chan []models.Coin
 
 		resInfo, err := c.getCoinInfo(ctx)
 		if err != nil {
-			c.log.Error("failed to get coin info", "func", fnName, "error", err)
+			c.log.Error("Failed to get coin info", c.log.Attr("error", err), c.log.Attr("fnName", fnName))
 
 			select {
 			case <-ctx.Done():
@@ -62,7 +62,7 @@ func (c *CoinInfoCollector) StartCollect(ctx context.Context) chan []models.Coin
 			case <-ticker.C:
 				resInfo, err := c.getCoinInfo(ctx)
 				if err != nil {
-					c.log.Error("failed to get coin info", "func", fnName, "error", err)
+					c.log.Error("Failed to get coin info", c.log.Attr("error", err), c.log.Attr("fnName", fnName))
 
 					select {
 					case <-ctx.Done():

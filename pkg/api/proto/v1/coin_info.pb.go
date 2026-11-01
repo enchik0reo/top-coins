@@ -106,27 +106,27 @@ func (x *Coin) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-type GetLastCoinRequest struct {
+type GetLastCoinInfoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetLastCoinRequest) Reset() {
-	*x = GetLastCoinRequest{}
+func (x *GetLastCoinInfoRequest) Reset() {
+	*x = GetLastCoinInfoRequest{}
 	mi := &file_proto_coin_info_v1_coin_info_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetLastCoinRequest) String() string {
+func (x *GetLastCoinInfoRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetLastCoinRequest) ProtoMessage() {}
+func (*GetLastCoinInfoRequest) ProtoMessage() {}
 
-func (x *GetLastCoinRequest) ProtoReflect() protoreflect.Message {
+func (x *GetLastCoinInfoRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_coin_info_v1_coin_info_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -138,39 +138,39 @@ func (x *GetLastCoinRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetLastCoinRequest.ProtoReflect.Descriptor instead.
-func (*GetLastCoinRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetLastCoinInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetLastCoinInfoRequest) Descriptor() ([]byte, []int) {
 	return file_proto_coin_info_v1_coin_info_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetLastCoinRequest) GetId() string {
+func (x *GetLastCoinInfoRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-type GetLastCoinResponse struct {
+type GetLastCoinInfoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Coin          *Coin                  `protobuf:"bytes,1,opt,name=coin,proto3" json:"coin,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetLastCoinResponse) Reset() {
-	*x = GetLastCoinResponse{}
+func (x *GetLastCoinInfoResponse) Reset() {
+	*x = GetLastCoinInfoResponse{}
 	mi := &file_proto_coin_info_v1_coin_info_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetLastCoinResponse) String() string {
+func (x *GetLastCoinInfoResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetLastCoinResponse) ProtoMessage() {}
+func (*GetLastCoinInfoResponse) ProtoMessage() {}
 
-func (x *GetLastCoinResponse) ProtoReflect() protoreflect.Message {
+func (x *GetLastCoinInfoResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_coin_info_v1_coin_info_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -182,12 +182,12 @@ func (x *GetLastCoinResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetLastCoinResponse.ProtoReflect.Descriptor instead.
-func (*GetLastCoinResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetLastCoinInfoResponse.ProtoReflect.Descriptor instead.
+func (*GetLastCoinInfoResponse) Descriptor() ([]byte, []int) {
 	return file_proto_coin_info_v1_coin_info_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetLastCoinResponse) GetCoin() *Coin {
+func (x *GetLastCoinInfoResponse) GetCoin() *Coin {
 	if x != nil {
 		return x.Coin
 	}
@@ -302,19 +302,19 @@ const file_proto_coin_info_v1_coin_info_proto_rawDesc = "" +
 	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12\x16\n" +
 	"\x06source\x18\x05 \x01(\tR\x06source\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"$\n" +
-	"\x12GetLastCoinRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"9\n" +
-	"\x13GetLastCoinResponse\x12\"\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"(\n" +
+	"\x16GetLastCoinInfoRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"=\n" +
+	"\x17GetLastCoinInfoResponse\x12\"\n" +
 	"\x04coin\x18\x01 \x01(\v2\x0e.coininfo.CoinR\x04coin\"b\n" +
 	"\x15GetCoinHistoryRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x129\n" +
 	"\n" +
 	"since_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tsinceTime\"B\n" +
 	"\x16GetCoinHistoryResponse\x12(\n" +
-	"\ahistory\x18\x01 \x03(\v2\x0e.coininfo.CoinR\ahistory2\xb2\x01\n" +
-	"\x0fCoinInfoService\x12J\n" +
-	"\vGetLastCoin\x12\x1c.coininfo.GetLastCoinRequest\x1a\x1d.coininfo.GetLastCoinResponse\x12S\n" +
+	"\ahistory\x18\x01 \x03(\v2\x0e.coininfo.CoinR\ahistory2\xbe\x01\n" +
+	"\x0fCoinInfoService\x12V\n" +
+	"\x0fGetLastCoinInfo\x12 .coininfo.GetLastCoinInfoRequest\x1a!.coininfo.GetLastCoinInfoResponse\x12S\n" +
 	"\x0eGetCoinHistory\x12\x1f.coininfo.GetCoinHistoryRequest\x1a .coininfo.GetCoinHistoryResponseB\x1eZ\x1cpkg/api/proto/v1;coin_infov1b\x06proto3"
 
 var (
@@ -331,21 +331,21 @@ func file_proto_coin_info_v1_coin_info_proto_rawDescGZIP() []byte {
 
 var file_proto_coin_info_v1_coin_info_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_coin_info_v1_coin_info_proto_goTypes = []any{
-	(*Coin)(nil),                   // 0: coininfo.Coin
-	(*GetLastCoinRequest)(nil),     // 1: coininfo.GetLastCoinRequest
-	(*GetLastCoinResponse)(nil),    // 2: coininfo.GetLastCoinResponse
-	(*GetCoinHistoryRequest)(nil),  // 3: coininfo.GetCoinHistoryRequest
-	(*GetCoinHistoryResponse)(nil), // 4: coininfo.GetCoinHistoryResponse
-	(*timestamppb.Timestamp)(nil),  // 5: google.protobuf.Timestamp
+	(*Coin)(nil),                    // 0: coininfo.Coin
+	(*GetLastCoinInfoRequest)(nil),  // 1: coininfo.GetLastCoinInfoRequest
+	(*GetLastCoinInfoResponse)(nil), // 2: coininfo.GetLastCoinInfoResponse
+	(*GetCoinHistoryRequest)(nil),   // 3: coininfo.GetCoinHistoryRequest
+	(*GetCoinHistoryResponse)(nil),  // 4: coininfo.GetCoinHistoryResponse
+	(*timestamppb.Timestamp)(nil),   // 5: google.protobuf.Timestamp
 }
 var file_proto_coin_info_v1_coin_info_proto_depIdxs = []int32{
 	5, // 0: coininfo.Coin.created_at:type_name -> google.protobuf.Timestamp
-	0, // 1: coininfo.GetLastCoinResponse.coin:type_name -> coininfo.Coin
+	0, // 1: coininfo.GetLastCoinInfoResponse.coin:type_name -> coininfo.Coin
 	5, // 2: coininfo.GetCoinHistoryRequest.since_time:type_name -> google.protobuf.Timestamp
 	0, // 3: coininfo.GetCoinHistoryResponse.history:type_name -> coininfo.Coin
-	1, // 4: coininfo.CoinInfoService.GetLastCoin:input_type -> coininfo.GetLastCoinRequest
+	1, // 4: coininfo.CoinInfoService.GetLastCoinInfo:input_type -> coininfo.GetLastCoinInfoRequest
 	3, // 5: coininfo.CoinInfoService.GetCoinHistory:input_type -> coininfo.GetCoinHistoryRequest
-	2, // 6: coininfo.CoinInfoService.GetLastCoin:output_type -> coininfo.GetLastCoinResponse
+	2, // 6: coininfo.CoinInfoService.GetLastCoinInfo:output_type -> coininfo.GetLastCoinInfoResponse
 	4, // 7: coininfo.CoinInfoService.GetCoinHistory:output_type -> coininfo.GetCoinHistoryResponse
 	6, // [6:8] is the sub-list for method output_type
 	4, // [4:6] is the sub-list for method input_type

@@ -7,11 +7,11 @@ import (
 	"github.com/top-coins/pkg/models"
 )
 
-type Logger struct {
+type CustomLogger struct {
 	*slog.Logger
 }
 
-func NewSlogLogger(env models.Environment) *Logger {
+func NewSlogLogger(env models.Environment) *CustomLogger {
 	var logHanlder slog.Handler
 
 	switch env {
@@ -29,5 +29,18 @@ func NewSlogLogger(env models.Environment) *Logger {
 		})
 	}
 
-	return &Logger{slog.New(logHanlder)}
+	return &CustomLogger{slog.New(logHanlder)}
+}
+
+func (l *CustomLogger) Attr(key string, value any) slog.Attr {
+	val := slog.AnyValue(value)
+
+	if err, ok := value.(error); ok {
+		val = slog.AnyValue(err.Error())
+	}
+
+	return slog.Attr{
+		Key:   key,
+		Value: val,
+	}
 }

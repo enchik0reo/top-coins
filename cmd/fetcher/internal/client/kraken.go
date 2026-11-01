@@ -38,7 +38,7 @@ type ticker struct {
 type KrakenClient struct {
 	*CoinsClient
 	url string
-	log *logger.Logger
+	log *logger.CustomLogger
 }
 
 func newKrakenClient(cl *CoinsClient) *KrakenClient {
@@ -66,7 +66,7 @@ func (c *KrakenClient) FetchInfo(ctx context.Context) (models.CoinInfo, error) {
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			c.log.Error("fail to close response body", "error", err, "fnName", fnName)
+			c.log.Error("Fail to close response body", c.log.Attr("error", err), c.log.Attr("fnName", fnName))
 		}
 	}()
 

@@ -12,8 +12,8 @@ import (
 )
 
 type storage interface {
-	LastCoin()    // TODO right signature
-	CoinHistory() // TODO right signature
+	LastCoinInfo() // TODO right signature
+	CoinHistory()  // TODO right signature
 }
 
 type GRPCServer struct {
@@ -61,8 +61,8 @@ func (s *GRPCServer) Stop() {
 	}
 }
 
-func (s *GRPCServer) GetLastCoin(context.Context, *protov1.GetLastCoinRequest) (*protov1.GetLastCoinResponse, error) {
-	// s.fetcher.LastCoin()
+func (s *GRPCServer) GetLastCoinInfo(context.Context, *protov1.GetLastCoinInfoRequest) (*protov1.GetLastCoinInfoResponse, error) {
+	// s.fetcher.LastCoinInfo()
 	panic("implement me")
 }
 

@@ -17,10 +17,10 @@ var (
 type CoinsClient struct {
 	timeout    time.Duration
 	httpClient http.Client
-	log        *logger.Logger
+	log        *logger.CustomLogger
 }
 
-func NewCoinsClient(tm time.Duration, log *logger.Logger) *CoinsClient {
+func NewCoinsClient(tm time.Duration, log *logger.CustomLogger) *CoinsClient {
 	cc := CoinsClient{
 		timeout: tm,
 	}

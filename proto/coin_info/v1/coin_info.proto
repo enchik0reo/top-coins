@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "pkg/api/proto/v1;coin_infov1";
 
 service CoinInfoService {
-  rpc GetLastCoin (GetLastCoinRequest) returns (GetLastCoinResponse);
+  rpc GetLastCoinInfo (GetLastCoinInfoRequest) returns (GetLastCoinInfoResponse);
   rpc GetCoinHistory (GetCoinHistoryRequest) returns (GetCoinHistoryResponse);
 }
 
@@ -20,11 +20,11 @@ message Coin {
   google.protobuf.Timestamp created_at = 6;
 }
 
-message GetLastCoinRequest {
+message GetLastCoinInfoRequest {
   string id = 1;
 }
 
-message GetLastCoinResponse {
+message GetLastCoinInfoResponse {
   Coin coin = 1;
 }
 
