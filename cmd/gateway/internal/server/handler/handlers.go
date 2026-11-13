@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (cr *CustomRouter) getLastCoinInfo() http.HandlerFunc {
+func (cr *CustomRouter) getCoinLastInfo() http.HandlerFunc {
 	const fnName = "get last coin info"
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (cr *CustomRouter) getLastCoinInfo() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), cr.timeout)
 		defer cancel()
 
-		coin, err := cr.coinClient.LastCoinInfo(ctx, id)
+		coin, err := cr.coinClient.CoinLastInfo(ctx, id)
 		if err != nil {
 			cr.log.Error("Can't get last coin info", cr.log.Attr("error", err), cr.log.Attr("func", fnName))
 

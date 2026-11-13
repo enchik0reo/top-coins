@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/cockroachdb/errors"
 
@@ -85,10 +84,9 @@ func (c *CoingeckoClient) mapCoin(info coingeckoCoinInfo) (models.CoinInfo, erro
 	cents := uint64(btcPrice * 100)
 
 	return models.CoinInfo{
-		Name:      models.BitCoin,
-		Price:     cents,
-		Currency:  models.CentsUSD,
-		Source:    models.Coingecko,
-		CreatedAt: time.Now().UTC(),
+		Name:     models.BitCoin,
+		Price:    cents,
+		Currency: models.CentsUSD,
+		Source:   models.Coingecko,
 	}, nil
 }

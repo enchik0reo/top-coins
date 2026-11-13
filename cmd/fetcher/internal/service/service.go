@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"time"
+	"uuid"
 
-	cockrErr "github.com/cockroachdb/errors"
+	"github.com/cockroachdb/errors"
 
 	"github.com/top-coins/cmd/fetcher/internal/contract"
 	"github.com/top-coins/pkg/logger"
@@ -96,6 +96,8 @@ func (c *CoinInfoCollector) getCoinInfo(ctx context.Context) ([]models.CoinInfo,
 
 	var err error
 	mu := sync.Mutex{}
+	requestTime := time.Now().UTC()
+	requestID := uuid.New().String()
 
 	for _, fetcher := range c.fetchers {
 		wg.Go(func() {
@@ -107,6 +109,9 @@ func (c *CoinInfoCollector) getCoinInfo(ctx context.Context) ([]models.CoinInfo,
 
 				return
 			}
+
+			info.RequestID = requestID
+			info.RequestTime = requestTime
 
 			infoCh <- info
 		})
@@ -122,7 +127,7 @@ func (c *CoinInfoCollector) getCoinInfo(ctx context.Context) ([]models.CoinInfo,
 	}
 
 	if len(resInfo) == 0 {
-		return nil, cockrErr.Wrap(err, fnName)
+		return nil, errors.Wrap(err, fnName)
 	}
 
 	return resInfo, nil

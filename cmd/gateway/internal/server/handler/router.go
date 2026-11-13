@@ -13,8 +13,8 @@ import (
 )
 
 type coinClient interface {
-	LastCoinInfo(ctx context.Context, id string) (*models.CoinInfo, error)
-	CoinHistory(ctx context.Context, id string, since time.Time) ([]*models.CoinInfo, error)
+	CoinLastInfo(ctx context.Context, name string) (models.CoinInfo, error)
+	CoinHistory(ctx context.Context, name string, since time.Time) ([]models.CoinInfo, error)
 }
 
 type CustomRouter struct {
@@ -41,7 +41,7 @@ func NewCustomRouter(c coinClient, cfg config.ApiServer, lg *logger.CustomLogger
 	r.Mux.Use(loggerMw(lg))
 	r.Mux.Use(corsSettings(cfg.AllowDomains))
 
-	r.Get("/api/v1/newest_info", r.getLastCoinInfo())
+	r.Get("/api/v1/newest_info", r.getCoinLastInfo())
 	r.Get("/api/v1/history", r.getCoinHistory())
 
 	return r

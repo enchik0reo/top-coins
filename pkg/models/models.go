@@ -1,14 +1,20 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var ErrNotFound = errors.New("not found")
 
 type CoinInfo struct {
-	ID        string       `json:"id" db:"id"`
-	Name      CoinName     `json:"name" db:"name"`
-	Price     uint64       `json:"price" db:"price"`
-	Currency  CoinCurrency `json:"currency" db:"currency"`
-	Source    CoinSource   `json:"source" db:"source"`
-	CreatedAt time.Time    `json:"created_at" db:"created_at"`
+	ID          uint64       `json:"id" db:"id"`
+	RequestID   string       `json:"request_id" db:"query_id"`
+	Name        CoinName     `json:"name" db:"name"`
+	Price       uint64       `json:"price" db:"price"`
+	Currency    CoinCurrency `json:"currency" db:"currency"`
+	Source      CoinSource   `json:"source" db:"source"`
+	RequestTime time.Time    `json:"request_time" db:"created_at"`
 }
 
 type CoinName string
@@ -20,7 +26,7 @@ const (
 type CoinCurrency string
 
 const (
-	CentsUSD CoinCurrency = "Cents USD"
+	CentsUSD CoinCurrency = "USD Cent"
 )
 
 type CoinSource string

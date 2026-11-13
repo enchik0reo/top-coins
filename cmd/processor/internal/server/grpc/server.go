@@ -3,17 +3,19 @@ package grpcsrv
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/top-coins/cmd/processor/internal/config"
 	protov1 "github.com/top-coins/pkg/api/proto/v1"
+	"github.com/top-coins/pkg/models"
 
 	"google.golang.org/grpc"
 )
 
 type storage interface {
-	LastCoinInfo() // TODO right signature
-	CoinHistory()  // TODO right signature
+	GetCoinLastInfo(ctx context.Context, name string) (models.CoinInfo, error)
+	GetCoinHistory(ctx context.Context, name string, sinceTime time.Time) ([]models.CoinInfo, error)
 }
 
 type GRPCServer struct {
@@ -46,7 +48,7 @@ func NewServer(cfg *config.ProcessorConfig, stor storage) (*GRPCServer, error) {
 }
 
 func (s *GRPCServer) Run() error {
-	const fnName = "server: run"
+	const fnName = "grpc server: run"
 
 	if err := s.server.Serve(s.listener); err != nil {
 		return errors.Wrap(err, fnName)
@@ -55,18 +57,18 @@ func (s *GRPCServer) Run() error {
 	return nil
 }
 
-func (s *GRPCServer) Stop() {
+func (s *GRPCServer) Stop() error {
+	const fnName = "grpc server: stop"
+
 	if s.server != nil {
 		s.server.GracefulStop()
 	}
-}
 
-func (s *GRPCServer) GetLastCoinInfo(context.Context, *protov1.GetLastCoinInfoRequest) (*protov1.GetLastCoinInfoResponse, error) {
-	// s.fetcher.LastCoinInfo()
-	panic("implement me")
-}
+	if s.listener != nil {
+		if err := s.listener.Close(); err != nil {
+			return errors.Wrap(err, fnName)
+		}
+	}
 
-func (s *GRPCServer) GetCoinHistory(context.Context, *protov1.GetCoinHistoryRequest) (*protov1.GetCoinHistoryResponse, error) {
-	// s.fetcher.CoinHistory()
-	panic("implement me")
+	return nil
 }

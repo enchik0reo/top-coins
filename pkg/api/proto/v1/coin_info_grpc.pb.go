@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CoinInfoService_GetLastCoinInfo_FullMethodName = "/coininfo.CoinInfoService/GetLastCoinInfo"
+	CoinInfoService_GetCoinLastInfo_FullMethodName = "/coininfo.CoinInfoService/GetCoinLastInfo"
 	CoinInfoService_GetCoinHistory_FullMethodName  = "/coininfo.CoinInfoService/GetCoinHistory"
 )
 
@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CoinInfoServiceClient interface {
-	GetLastCoinInfo(ctx context.Context, in *GetLastCoinInfoRequest, opts ...grpc.CallOption) (*GetLastCoinInfoResponse, error)
+	GetCoinLastInfo(ctx context.Context, in *GetCoinLastInfoRequest, opts ...grpc.CallOption) (*GetCoinLastInfoResponse, error)
 	GetCoinHistory(ctx context.Context, in *GetCoinHistoryRequest, opts ...grpc.CallOption) (*GetCoinHistoryResponse, error)
 }
 
@@ -39,10 +39,10 @@ func NewCoinInfoServiceClient(cc grpc.ClientConnInterface) CoinInfoServiceClient
 	return &coinInfoServiceClient{cc}
 }
 
-func (c *coinInfoServiceClient) GetLastCoinInfo(ctx context.Context, in *GetLastCoinInfoRequest, opts ...grpc.CallOption) (*GetLastCoinInfoResponse, error) {
+func (c *coinInfoServiceClient) GetCoinLastInfo(ctx context.Context, in *GetCoinLastInfoRequest, opts ...grpc.CallOption) (*GetCoinLastInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetLastCoinInfoResponse)
-	err := c.cc.Invoke(ctx, CoinInfoService_GetLastCoinInfo_FullMethodName, in, out, cOpts...)
+	out := new(GetCoinLastInfoResponse)
+	err := c.cc.Invoke(ctx, CoinInfoService_GetCoinLastInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *coinInfoServiceClient) GetCoinHistory(ctx context.Context, in *GetCoinH
 // All implementations must embed UnimplementedCoinInfoServiceServer
 // for forward compatibility.
 type CoinInfoServiceServer interface {
-	GetLastCoinInfo(context.Context, *GetLastCoinInfoRequest) (*GetLastCoinInfoResponse, error)
+	GetCoinLastInfo(context.Context, *GetCoinLastInfoRequest) (*GetCoinLastInfoResponse, error)
 	GetCoinHistory(context.Context, *GetCoinHistoryRequest) (*GetCoinHistoryResponse, error)
 	mustEmbedUnimplementedCoinInfoServiceServer()
 }
@@ -75,8 +75,8 @@ type CoinInfoServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCoinInfoServiceServer struct{}
 
-func (UnimplementedCoinInfoServiceServer) GetLastCoinInfo(context.Context, *GetLastCoinInfoRequest) (*GetLastCoinInfoResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetLastCoinInfo not implemented")
+func (UnimplementedCoinInfoServiceServer) GetCoinLastInfo(context.Context, *GetCoinLastInfoRequest) (*GetCoinLastInfoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCoinLastInfo not implemented")
 }
 func (UnimplementedCoinInfoServiceServer) GetCoinHistory(context.Context, *GetCoinHistoryRequest) (*GetCoinHistoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCoinHistory not implemented")
@@ -102,20 +102,20 @@ func RegisterCoinInfoServiceServer(s grpc.ServiceRegistrar, srv CoinInfoServiceS
 	s.RegisterService(&CoinInfoService_ServiceDesc, srv)
 }
 
-func _CoinInfoService_GetLastCoinInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLastCoinInfoRequest)
+func _CoinInfoService_GetCoinLastInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCoinLastInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CoinInfoServiceServer).GetLastCoinInfo(ctx, in)
+		return srv.(CoinInfoServiceServer).GetCoinLastInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CoinInfoService_GetLastCoinInfo_FullMethodName,
+		FullMethod: CoinInfoService_GetCoinLastInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoinInfoServiceServer).GetLastCoinInfo(ctx, req.(*GetLastCoinInfoRequest))
+		return srv.(CoinInfoServiceServer).GetCoinLastInfo(ctx, req.(*GetCoinLastInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -146,8 +146,8 @@ var CoinInfoService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CoinInfoServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetLastCoinInfo",
-			Handler:    _CoinInfoService_GetLastCoinInfo_Handler,
+			MethodName: "GetCoinLastInfo",
+			Handler:    _CoinInfoService_GetCoinLastInfo_Handler,
 		},
 		{
 			MethodName: "GetCoinHistory",

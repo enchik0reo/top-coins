@@ -25,7 +25,7 @@ type App struct {
 }
 
 func New() *App {
-	const fnName = "new app"
+	const fnName = "new gateway app"
 
 	cfg, err := config.NewConfigFromEnv()
 	if err != nil {

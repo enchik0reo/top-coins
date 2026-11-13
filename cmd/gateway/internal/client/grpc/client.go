@@ -45,38 +45,38 @@ func (c *Client) Close() error {
 	return nil
 }
 
-func (c *Client) LastCoinInfo(ctx context.Context, id string) (*models.CoinInfo, error) {
+func (c *Client) CoinLastInfo(ctx context.Context, name string) (models.CoinInfo, error) {
 	const fnName = "client: get last coin"
 
-	req := &protov1.GetLastCoinInfoRequest{
-		Id: id,
+	req := &protov1.GetCoinLastInfoRequest{
+		Name: name,
 	}
 
-	resp, err := c.grpcClient.GetLastCoinInfo(ctx, req)
+	resp, err := c.grpcClient.GetCoinLastInfo(ctx, req)
 	if err != nil {
-		return nil, errors.Wrap(err, fnName)
+		return models.CoinInfo{}, errors.Wrap(err, fnName)
 	}
 
 	pbCoin := resp.GetCoin()
 	if pbCoin == nil {
-		return nil, errors.Wrap(ErrEmptyResponce, fnName)
+		return models.CoinInfo{}, errors.Wrap(ErrEmptyResponce, fnName)
 	}
 
-	return &models.CoinInfo{
-		ID:        pbCoin.GetId(),
-		Name:      models.CoinName(pbCoin.GetName()),
-		Price:     pbCoin.GetPrice(),
-		Currency:  models.CoinCurrency(pbCoin.GetCurrency()),
-		Source:    models.CoinSource(pbCoin.GetSource()),
-		CreatedAt: pbCoin.GetCreatedAt().AsTime(),
+	return models.CoinInfo{
+		ID:          pbCoin.GetId(),
+		Name:        models.CoinName(pbCoin.GetName()),
+		Price:       pbCoin.GetPrice(),
+		Currency:    models.CoinCurrency(pbCoin.GetCurrency()),
+		Source:      models.CoinSource(pbCoin.GetSource()),
+		RequestTime: pbCoin.GetRequestTime().AsTime(),
 	}, nil
 }
 
-func (c *Client) CoinHistory(ctx context.Context, id string, since time.Time) ([]*models.CoinInfo, error) {
+func (c *Client) CoinHistory(ctx context.Context, name string, since time.Time) ([]models.CoinInfo, error) {
 	const fnName = "client: coin history"
 
 	req := &protov1.GetCoinHistoryRequest{
-		Id:        id,
+		Name:      name,
 		SinceTime: timestamppb.New(since),
 	}
 
@@ -90,16 +90,17 @@ func (c *Client) CoinHistory(ctx context.Context, id string, since time.Time) ([
 		return nil, errors.Wrap(ErrEmptyResponce, fnName)
 	}
 
-	res := make([]*models.CoinInfo, 0, len(pbCoinHistory))
+	res := make([]models.CoinInfo, 0, len(pbCoinHistory))
 
 	for _, pbCoin := range pbCoinHistory {
-		res = append(res, &models.CoinInfo{
-			ID:        pbCoin.GetId(),
-			Name:      models.CoinName(pbCoin.GetName()),
-			Price:     pbCoin.GetPrice(),
-			Currency:  models.CoinCurrency(pbCoin.GetCurrency()),
-			Source:    models.CoinSource(pbCoin.GetSource()),
-			CreatedAt: pbCoin.GetCreatedAt().AsTime(),
+		res = append(res, models.CoinInfo{
+			ID:          pbCoin.GetId(),
+			RequestID:   pbCoin.GetRequestId(),
+			Name:        models.CoinName(pbCoin.GetName()),
+			Price:       pbCoin.GetPrice(),
+			Currency:    models.CoinCurrency(pbCoin.GetCurrency()),
+			Source:      models.CoinSource(pbCoin.GetSource()),
+			RequestTime: pbCoin.GetRequestTime().AsTime(),
 		})
 	}
 

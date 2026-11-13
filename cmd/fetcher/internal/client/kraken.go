@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/cockroachdb/errors"
 
@@ -108,10 +107,9 @@ func (c *KrakenClient) mapCoin(info krakenCoinInfo) (models.CoinInfo, error) {
 	cents := uint64(f * 100)
 
 	return models.CoinInfo{
-		Name:      models.BitCoin,
-		Price:     cents,
-		Currency:  models.CentsUSD,
-		Source:    models.Kraken,
-		CreatedAt: time.Now().UTC(),
+		Name:     models.BitCoin,
+		Price:    cents,
+		Currency: models.CentsUSD,
+		Source:   models.Kraken,
 	}, nil
 }
