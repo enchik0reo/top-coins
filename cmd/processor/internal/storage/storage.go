@@ -42,6 +42,8 @@ func (s *StorageService) GetCoinLastInfo(ctx context.Context, coinName string) (
 
 	coin, err := s.cache.GetCoinInfo(ctx, coinName)
 	if err == nil {
+		s.log.Debug("Coin last info loaded from cache", s.log.Attr("func", fnName), s.log.Attr("key", coinName))
+
 		return coin, nil
 	}
 	if errors.Is(err, models.ErrNotFound) {
@@ -55,6 +57,8 @@ func (s *StorageService) GetCoinLastInfo(ctx context.Context, coinName string) (
 		return models.CoinInfo{}, errors.Wrap(err, fnName)
 	}
 
+	s.log.Debug("Coin last info loaded from database", s.log.Attr("func", fnName), s.log.Attr("name", coinName))
+
 	return coin, nil
 }
 
@@ -65,6 +69,8 @@ func (s *StorageService) GetCoinHistory(ctx context.Context, coinName string, si
 	if err != nil {
 		return nil, errors.Wrap(err, fnName)
 	}
+
+	s.log.Debug("Coin history loaded", s.log.Attr("func", fnName), s.log.Attr("name", coinName), s.log.Attr("count", len(history)))
 
 	return history, nil
 }
@@ -84,6 +90,8 @@ func (s *StorageService) SaveCoinInfo(ctx context.Context, coinName string, coin
 	if err := s.cache.SetValue(ctx, coinName, coin); err != nil {
 		return errors.Wrap(err, fnName)
 	}
+
+	s.log.Debug("Coin info saved to database and cache", s.log.Attr("func", fnName), s.log.Attr("name", coinName), s.log.Attr("count", len(coinsInfo)))
 
 	return nil
 }

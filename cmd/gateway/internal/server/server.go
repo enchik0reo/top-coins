@@ -32,7 +32,10 @@ func New(handler http.Handler, cfg *config.ApiServer, l *logger.CustomLogger) *S
 func (s *Server) Start() error {
 	const fnName = "server: start"
 
-	if err := s.httpSrv.ListenAndServe(); err != nil {
+	s.log.Debug("HTTP server is listening", s.log.Attr("func", fnName), s.log.Attr("addr", s.httpSrv.Addr))
+
+	err := s.httpSrv.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return errors.Wrap(err, fnName)
 	}
 

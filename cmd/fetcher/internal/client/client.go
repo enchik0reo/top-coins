@@ -23,6 +23,7 @@ type CoinsClient struct {
 func NewCoinsClient(tm time.Duration, log *logger.CustomLogger) *CoinsClient {
 	cc := CoinsClient{
 		timeout: tm,
+		log:     log,
 	}
 
 	cc.httpClient = http.Client{

@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: processor-config
+data:
+  ENVIRONMENT: "debug"
+  GRPC_SERVER_ADDRESS: "0.0.0.0:50051"
+  PROCESSOR_SENDER: "kafka"
+  CTX_TIMEOUT: "20s"
+
+  KAFKA_BROKERS: "172.17.0.1:9092"
+  KAFKA_INFO_TOPIC: "crypto.info"
+  KAFKA_ALERT_TOPIC: "crypto.alert"
+  FETCHER_NAME: "fetcher"
+  KAFKA_CONSUMER_GROUP_ID: "processor_coins"
+  KAFKA_TIMEOUT: "10s"
+  
+  REDIS_ADDRESS: "172.17.0.1:6379"
+  REDIS_TIMEOUT: "10s"
+  
+  DB_DRIVER: "postgres"
+  DB_HOST: "172.17.0.1"
+  DB_PORT: "5432"
+  DB_USER: "postgres"
+  DB_NAME: "postgres"
+  DB_SSLMODE: "disable"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: processor-secret
+type: Opaque
+stringData:
+  DB_PASSWORD: "postgres"
+  REDIS_PASSWORD: "redis"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor
+  labels:
+    app: processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor
+  template:
+    metadata:
+      labels:
+        app: processor
+    spec:
+      containers:
+      - name: processor
+        image: crypto-processor:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 50052
+        
+        envFrom:
+        - configMapRef:
+            name: processor-config
+            
+        env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: processor-secret
+              key: DB_PASSWORD
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: processor-secret
+              key: REDIS_PASSWORD
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: processor-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: processor
+  ports:
+  - port: 50051
+    targetPort: 50052

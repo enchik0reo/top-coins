@@ -1,8 +1,10 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	_ "github.com/lib/pq"
@@ -22,28 +24,25 @@ func NewDatabase(cfg *config.Postgres, log *logger.CustomLogger) *PSQLDatabase {
 	return &PSQLDatabase{cfg: cfg, log: log}
 }
 
-func (d *PSQLDatabase) Connect(cfg *config.Postgres) error {
+func (d *PSQLDatabase) Connect(ctx context.Context, timeout time.Duration) error {
 	const fnName = "psql database: connect"
 
 	dsn := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
-		cfg.Driver, cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName, cfg.SSLMode)
+		d.cfg.Driver, d.cfg.User, d.cfg.Password, d.cfg.Host, d.cfg.Port, d.cfg.DBName, d.cfg.SSLMode)
 
-	db, err := sql.Open(cfg.Driver, dsn)
+	db, err := sql.Open(d.cfg.Driver, dsn)
 	if err != nil {
 		return errors.Wrap(err, fnName)
 	}
 
-	d.client = db
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
-	return nil
-}
-
-func (d *PSQLDatabase) CheckConnection() error {
-	const fnName = "psql database: check connection"
-
-	if err := d.client.Ping(); err != nil {
+	if err := db.PingContext(ctx); err != nil {
 		return errors.Wrap(err, fnName)
 	}
+
+	d.client = db
 
 	return nil
 }

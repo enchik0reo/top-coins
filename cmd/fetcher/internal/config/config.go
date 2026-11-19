@@ -17,8 +17,8 @@ const (
 )
 
 type KafkaProducer struct {
-	KafkaBrokers   []string      `env:"KAFKA_BROKERS" env-default:"localhost:9092"`
-	KafkaInfoTopic string        `env:"KAFKA_INFO_TOPIC env-required:"true""`
+	KafkaBrokers   []string      `env:"KAFKA_BROKERS" env-required:"true" env-default:"localhost:9092" env-separator:","`
+	KafkaInfoTopic string        `env:"KAFKA_INFO_TOPIC" env-required:"true"`
 	SourceName     string        `env:"FETCHER_NAME" env-default:"fetcher"`
 	Timeot         time.Duration `env:"KAFKA_TIMEOUT" env-default:"10s"`
 }

@@ -1,29 +1,45 @@
 version: '3'
 
+dotenv: ['.env']
+
+# --- infra ---
+
 tasks:
   infra:up:
     desc: "Start infrastructure in docker compose (PostgreSQL, Redis, Kafka)"
-    cmd: docker compose -f deployments/docker-compose.infra.yml up -d
+    cmds:
+      - docker compose -f deployments/docker-compose.infra.yml up -d
+      - task: db:wait   
+      - task: db:migrate
+
+  db:wait:
+    internal: true
+    cmds:
+      - |
+        echo "Waiting for PostgreSQL to start..."
+        until docker exec postgres pg_isready -U {{.DB_USER}} -d {{.DB_NAME}}; do
+          sleep 1
+        done
+        echo "PostgreSQL is ready!"
+
+  db:migrate:
+    desc: "Apply database migrations"
+    env:
+      GOOSE_DRIVER: "{{.DB_DRIVER}}"
+      GOOSE_DBSTRING: "host={{.DB_HOST}} port={{.DB_PORT}} user={{.DB_USER}} password={{.DB_PASSWORD}} dbname={{.DB_NAME}} sslmode={{.DB_SSLMODE}}"
+      GOOSE_MIGRATION_DIR: "./database"
+    cmds:
+      - goose up
 
   infra:down:
     desc: "Stop infrastructure in docker compose"
     cmd: docker compose -f deployments/docker-compose.infra.yml down
 
-  services:up:
-    desc: "Start services in docker compose"
-    cmd: docker compose -f deployments/docker-compose.services.yml up -d --build
+  infra:full-down:
+    desc: "Stop infrastructure in docker compose"
+    cmd: docker compose -f deployments/docker-compose.infra.yml down -v
 
-  services:down:
-    desc: "Stop services in docker compose"
-    cmd: docker compose -f deployments/docker-compose.services.yml down
- 
-  app:up:
-    desc: "Start full application in docker compose"
-    cmd: docker compose -f deployments/docker-compose.infra.yml -f docker-compose.services.yml up -d --build
-
-  app:down:
-    desc: "Stop full application in docker compose"
-    cmd: docker compose -f deployments/docker-compose.infra.yml -f docker-compose.services.yml down
+# --- contracts ---
 
   proto:
     desc: "Generate Go Protobuf contract"
@@ -33,3 +49,54 @@ tasks:
       - proto/**/*.proto
     generates:
       - pkg/api/proto/**/*.go
+
+# --- app images ---
+
+  docker:build:
+    desc: "Build all services Docker images"
+    cmds: 
+      - task: build:fetcher
+      - task: build:gateway
+      - task: build:processor
+
+  build:fetcher:
+    desc: "Build fetcher image"
+    cmds:
+      - docker build -f cmd/fetcher/Dockerfile -t crypto-fetcher:latest .
+
+  build:gateway:
+    desc: "Build gateway image"
+    cmds:
+      - docker build -f cmd/gateway/Dockerfile -t crypto-gateway:latest .
+
+  build:processor:
+    desc: "Build processor image"
+    cmds:
+      - docker build -f cmd/processor/Dockerfile -t crypto-processor:latest .
+
+# --- k8s ---
+
+  k8s:cluster:up:
+    desc: "Create empty local kind cluster using config"
+    cmd: kind create cluster --name crypto-cluster --config deployments/kind-cluster-config.yaml || true
+
+  k8s:cluster:down:
+    desc: "Delete local kind cluster"
+    cmd: kind delete cluster --name crypto-cluster
+
+  k8s:load:
+    desc: "Load local Docker images into kind cluster"
+    deps: [k8s:cluster:up, docker:build]
+    cmds:
+      - kind load docker-image crypto-fetcher:latest --name crypto-cluster
+      - kind load docker-image crypto-gateway:latest --name crypto-cluster
+      - kind load docker-image crypto-processor:latest --name crypto-cluster
+
+  k8s:up:
+    desc: "Deploy applications into the running cluster"
+    deps: [k8s:load]
+    cmd: kubectl apply -f deployments/k8s/
+
+  k8s:down:
+    desc: "Delete all Kubernetes manifests from kind cluster"
+    cmd: kubectl delete -f deployments/k8s/ --ignore-not-found=true

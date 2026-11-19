@@ -15,7 +15,7 @@ import (
 func (d *PSQLDatabase) GetCoinLastInfo(ctx context.Context, name string) (models.CoinInfo, error) {
 	const fnName = "psql database: get coin last info"
 
-	q := `SELECT request_id, name, AVG(price) as price, request_time 
+	q := `SELECT request_id, name, ROUND(AVG(price))::bigint as price, request_time 
 	FROM coins c 
 	WHERE name = $1 
 	GROUP BY request_id, name, request_time 
@@ -38,13 +38,15 @@ func (d *PSQLDatabase) GetCoinLastInfo(ctx context.Context, name string) (models
 		return models.CoinInfo{}, errors.Wrap(err, fnName)
 	}
 
+	d.log.Debug("Coin last info loaded from database", d.log.Attr("func", fnName), d.log.Attr("name", name))
+
 	return coinInfo, nil
 }
 
 func (d *PSQLDatabase) GetCoinHistory(ctx context.Context, name string, sinceTime time.Time) ([]models.CoinInfo, error) {
 	const fnName = "psql database: get coin history"
 
-	q := `SELECT request_id, name, AVG(price) as price, request_time 
+	q := `SELECT request_id, name, ROUND(AVG(price))::bigint as price, request_time 
 	FROM coins c 
 	WHERE name = $1 AND request_time >= $2 
 	GROUP BY request_id, name, request_time 
@@ -76,6 +78,8 @@ func (d *PSQLDatabase) GetCoinHistory(ctx context.Context, name string, sinceTim
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, fnName)
 	}
+
+	d.log.Debug("Coin history loaded from database", d.log.Attr("func", fnName), d.log.Attr("name", name), d.log.Attr("count", len(history)))
 
 	return history, nil
 }
@@ -111,6 +115,8 @@ func (d *PSQLDatabase) SaveCoinInfo(ctx context.Context, coinsInfo []models.Coin
 	if err != nil {
 		return errors.Wrap(err, fnName)
 	}
+
+	d.log.Debug("Coin info saved to database", d.log.Attr("func", fnName), d.log.Attr("count", len(coinsInfo)))
 
 	return nil
 }

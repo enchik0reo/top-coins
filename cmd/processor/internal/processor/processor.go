@@ -61,20 +61,24 @@ func (p *ProcessorService) Run(ctx context.Context) error {
 		return errors.Wrap(err, fnName)
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			p.log.Debug("Context canceled", p.log.Attr("func", fnName))
-			break
-		case <-p.stopCh:
-			p.log.Debug("Service stopped gracefully", p.log.Attr("func", fnName))
-			break
-		case msg := <-infoCh:
-			if err := p.processMessage(ctx, msg); err != nil {
-				p.log.Error("Can't process message", p.log.Attr("error", err), p.log.Attr("func", fnName))
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				p.log.Debug("Context canceled", p.log.Attr("func", fnName))
+				return
+			case <-p.stopCh:
+				p.log.Debug("Service stopped gracefully", p.log.Attr("func", fnName))
+				return
+			case msg := <-infoCh:
+				if err := p.processMessage(ctx, msg); err != nil {
+					p.log.Error("Can't process message", p.log.Attr("error", err), p.log.Attr("func", fnName))
+				}
 			}
 		}
-	}
+	}()
+
+	return nil
 }
 
 func (p *ProcessorService) Stop() {
@@ -82,14 +86,18 @@ func (p *ProcessorService) Stop() {
 }
 
 func (p *ProcessorService) processMessage(ctx context.Context, msg *kafka.CoinMessage) error {
-	const fnName = "must proceess message"
+	const fnName = "proceess message"
 
 	info := msg.GetCoinInfo()
+	p.log.Debug("Coin message received", p.log.Attr("func", fnName), p.log.Attr("coins", len(info)))
 
 	defer func() {
 		if err := msg.Commit(ctx); err != nil {
 			p.log.Error("Can't commit message", p.log.Attr("error", err), p.log.Attr("func", fnName))
+			return
 		}
+
+		p.log.Debug("Kafka message committed", p.log.Attr("func", fnName))
 	}()
 
 	if err := msg.GetError(); err != nil {
@@ -105,6 +113,8 @@ func (p *ProcessorService) processMessage(ctx context.Context, msg *kafka.CoinMe
 	if err := p.saver.SaveCoinInfo(ctx, info); err != nil {
 		return errors.Wrap(err, fnName)
 	}
+
+	p.log.Debug("Coin message processed", p.log.Attr("func", fnName), p.log.Attr("coins", len(info)))
 
 	go p.notifyIfIncrease(ctx, info, hourHistory)
 
@@ -131,10 +141,16 @@ func (p *ProcessorService) notifyIfIncrease(ctx context.Context, currentCoinInfo
 
 			return
 		}
+
+		p.log.Debug("Price increase alert published", p.log.Attr("func", fnName), p.log.Attr("coin", coin.Name))
 	}
 }
 
 func coinAvgPrice(coins []models.CoinInfo) uint64 {
+	if len(coins) == 0 {
+		return 0
+	}
+
 	var tempSum uint64
 	var currCoinAvg uint64
 

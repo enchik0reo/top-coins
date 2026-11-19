@@ -17,7 +17,7 @@ const (
 )
 
 type Kafka struct {
-	Brokers         []string      `env:"KAFKA_BROKERS" env-default:"localhost:9092"`
+	Brokers         []string      `env:"KAFKA_BROKERS" env-default:"localhost:9092" env-separator:","`
 	CoinInfoTopic   string        `env:"KAFKA_INFO_TOPIC" env-required:"true"`
 	CoinAlertTopic  string        `env:"KAFKA_ALERT_TOPIC" env-required:"true"`
 	SourceName      string        `env:"FETCHER_NAME" env-default:"fetcher"`
@@ -26,7 +26,7 @@ type Kafka struct {
 }
 
 type Server struct {
-	Port string `env:"GRPC_SERVER_PORT" env-default:"50051"`
+	Address string `env:"GRPC_SERVER_ADDRESS" env-default:"localhost:50051"`
 }
 
 type Redis struct {
@@ -51,8 +51,9 @@ type ProcessorConfig struct {
 	Postgres Postgres
 	Redis    Redis
 
-	Sender SenderType         `env:"PROCESSOR_SENDER" env-default:"local"`
-	Env    models.Environment `env:"ENVIRONMENT" env-default:"local"`
+	Sender     SenderType         `env:"PROCESSOR_SENDER" env-default:"local"`
+	Env        models.Environment `env:"ENVIRONMENT" env-default:"local"`
+	CtxTimeout time.Duration      `env:"CTX_TIMEOUT" env-default:"10s"`
 }
 
 func NewConfigFromEnv() (*ProcessorConfig, error) {

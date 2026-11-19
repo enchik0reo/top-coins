@@ -9,25 +9,50 @@ import (
 	"github.com/segmentio/kafka-go"
 
 	"github.com/top-coins/cmd/processor/internal/config"
+	"github.com/top-coins/pkg/logger"
 	"github.com/top-coins/pkg/models"
 )
 
+var ErrEmptyBrokers = errors.New("empty brokers list")
+
 type KafkaProducer struct {
 	cfg    *config.Kafka
+	log    *logger.CustomLogger
 	writer *kafka.Writer
 }
 
-func newKafkaProducer(cfg *config.Kafka) *KafkaProducer {
+func newKafkaProducer(cfg *config.Kafka, log *logger.CustomLogger) (*KafkaProducer, error) {
+	const fnName = "new kafka producer"
+
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeot)
+	defer cancel()
+
+	if len(cfg.Brokers) == 0 {
+		return nil, errors.Wrap(ErrEmptyBrokers, fnName)
+	}
+
+	brokerAddr := cfg.Brokers[0]
+	conn, err := kafka.DialContext(ctx, "tcp", brokerAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, fnName)
+	}
+	if err := conn.Close(); err != nil {
+		return nil, errors.Wrap(err, fnName)
+	}
+
 	w := &kafka.Writer{
-		Addr:     kafka.TCP(cfg.Brokers...),
-		Topic:    cfg.CoinAlertTopic,
-		Balancer: &kafka.LeastBytes{},
+		Addr:                   kafka.TCP(cfg.Brokers...),
+		Topic:                  cfg.CoinAlertTopic,
+		Balancer:               &kafka.LeastBytes{},
+		AllowAutoTopicCreation: true,
+		MaxAttempts:            20,
 	}
 
 	return &KafkaProducer{
 		writer: w,
 		cfg:    cfg,
-	}
+		log:    log,
+	}, nil
 }
 
 func (p *KafkaProducer) Publish(ctx context.Context, coinInfo models.CoinInfo) error {
@@ -56,6 +81,8 @@ func (p *KafkaProducer) Publish(ctx context.Context, coinInfo models.CoinInfo) e
 	if err := p.writer.WriteMessages(ctx, message); err != nil {
 		return errors.Wrap(err, fnName)
 	}
+
+	p.log.Debug("Alert published to kafka", p.log.Attr("func", fnName), p.log.Attr("coin", coinInfo.Name), p.log.Attr("topic", p.cfg.CoinAlertTopic))
 
 	return nil
 }

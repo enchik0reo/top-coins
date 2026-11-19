@@ -22,6 +22,8 @@ func (c *RedisCache) SetValue(ctx context.Context, key string, value any) error 
 		return errors.Wrap(err, fnName)
 	}
 
+	c.log.Debug("Value saved to cache", c.log.Attr("func", fnName), c.log.Attr("key", key))
+
 	return nil
 }
 
@@ -43,6 +45,8 @@ func (c *RedisCache) GetCoinInfo(ctx context.Context, key string) (models.CoinIn
 	if err := json.Unmarshal(bytes, &res); err != nil {
 		return models.CoinInfo{}, errors.Wrap(err, fnName)
 	}
+
+	c.log.Debug("Value loaded from cache", c.log.Attr("func", fnName), c.log.Attr("key", key))
 
 	return res, nil
 }

@@ -26,6 +26,8 @@ func (s *GRPCServer) GetCoinInfo(ctx context.Context, req *protov1.GetCoinLastIn
 		RequestTime: timestamppb.New(coin.RequestTime),
 	}
 
+	s.log.Debug("Coin info request handled", s.log.Attr("func", fnName), s.log.Attr("name", req.GetName()))
+
 	return &protov1.GetCoinLastInfoResponse{
 		Coin: &pCoin,
 	}, nil
@@ -52,6 +54,8 @@ func (s *GRPCServer) GetCoinHistory(ctx context.Context, req *protov1.GetCoinHis
 			RequestTime: timestamppb.New(coin.RequestTime),
 		})
 	}
+
+	s.log.Debug("Coin history request handled", s.log.Attr("func", fnName), s.log.Attr("name", req.GetName()), s.log.Attr("count", len(pHistory)))
 
 	return &protov1.GetCoinHistoryResponse{
 		History: pHistory,

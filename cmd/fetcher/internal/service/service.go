@@ -34,9 +34,12 @@ func (c *CoinInfoCollector) StartCollect(ctx context.Context) chan []models.Coin
 
 	infoChan := make(chan []models.CoinInfo)
 
+	c.log.Debug("Coin info collection loop started", c.log.Attr("func", fnName))
+
 	go func() {
 		defer close(infoChan)
 		defer ticker.Stop()
+		defer c.log.Debug("Coin info collector stopped", c.log.Attr("func", fnName))
 
 		resInfo, err := c.getCoinInfo(ctx)
 		if err != nil {
@@ -53,6 +56,9 @@ func (c *CoinInfoCollector) StartCollect(ctx context.Context) chan []models.Coin
 		case <-ctx.Done():
 			return
 		case infoChan <- resInfo:
+			if err == nil {
+				c.log.Debug("Coin info batch collected", c.log.Attr("func", fnName), c.log.Attr("count", len(resInfo)))
+			}
 		}
 
 		for {
@@ -76,6 +82,7 @@ func (c *CoinInfoCollector) StartCollect(ctx context.Context) chan []models.Coin
 				case <-ctx.Done():
 					return
 				case infoChan <- resInfo:
+					c.log.Debug("Coin info batch collected", c.log.Attr("func", fnName), c.log.Attr("count", len(resInfo)))
 				}
 			}
 		}

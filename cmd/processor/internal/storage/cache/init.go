@@ -37,8 +37,11 @@ func NewCache(cfg config.Redis, log *logger.CustomLogger) *RedisCache {
 	}
 }
 
-func (c *RedisCache) CheckConnection(ctx context.Context) error {
+func (c *RedisCache) CheckConnection(ctx context.Context, timeout time.Duration) error {
 	const fnName = "redis cache: check connection"
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	if _, err := c.client.Ping(ctx).Result(); err != nil {
 		return errors.Wrap(err, fnName)

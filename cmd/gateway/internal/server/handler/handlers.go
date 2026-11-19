@@ -18,6 +18,7 @@ func (cr *CustomRouter) getCoinLastInfo() http.HandlerFunc {
 		}()
 
 		id := r.URL.Query().Get("id")
+		cr.log.Debug("Last coin info requested", cr.log.Attr("func", fnName), cr.log.Attr("id", id))
 
 		ctx, cancel := context.WithTimeout(context.Background(), cr.timeout)
 		defer cancel()
@@ -33,6 +34,8 @@ func (cr *CustomRouter) getCoinLastInfo() http.HandlerFunc {
 
 			return
 		}
+
+		cr.log.Debug("Last coin info sent", cr.log.Attr("func", fnName), cr.log.Attr("id", id))
 
 		cr.mustSendResponseJSON(w,
 			http.StatusOK,
@@ -53,6 +56,7 @@ func (cr *CustomRouter) getCoinHistory() http.HandlerFunc {
 
 		id := r.URL.Query().Get("id")
 		since := r.URL.Query().Get("since")
+		cr.log.Debug("Coin history requested", cr.log.Attr("func", fnName), cr.log.Attr("id", id), cr.log.Attr("since", since))
 
 		sinceTimestamp, err := strconv.Atoi(since)
 		if err != nil {
@@ -82,6 +86,8 @@ func (cr *CustomRouter) getCoinHistory() http.HandlerFunc {
 
 			return
 		}
+
+		cr.log.Debug("Coin history sent", cr.log.Attr("func", fnName), cr.log.Attr("id", id), cr.log.Attr("count", len(coins)))
 
 		cr.mustSendResponseJSON(w,
 			http.StatusOK,

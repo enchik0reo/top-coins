@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
@@ -48,11 +49,13 @@ func New() *App {
 		log: log,
 	}
 
+	app.mustPrintCfg()
+
 	fetchers := client.NewCoinsClient(app.cfg.Client.Timeout, app.log).BringFetchers()
 
 	app.infoCollector = service.NewCoinInfoCollector(app.cfg.FetchTicker, fetchers, app.log)
 
-	infoSender, err := sender.NewInfoSender(app.cfg)
+	infoSender, err := sender.NewInfoSender(app.cfg, app.log)
 	if err != nil {
 		app.log.Error("Can't create info sender", app.log.Attr("error", err), app.log.Attr("func", fnName))
 		os.Exit(1)
@@ -64,20 +67,24 @@ func New() *App {
 }
 
 func (a *App) MustRun() {
+	const fnName = "fetcher app: must run"
+
 	a.log.Info("Fetcher service is running", "env", a.cfg.Env)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	infoCh := a.infoCollector.StartCollect(ctx)
+	a.log.Debug("Coin info collector started successfully", a.log.Attr("func", fnName))
 
 	go func() {
 		for coinsInfo := range infoCh {
 			a.infoSender.Publish(ctx, coinsInfo)
 		}
 	}()
+	a.log.Debug("Coin info sender started successfully", a.log.Attr("func", fnName))
 
-	a.log.Info("Fetcher service runs")
+	a.log.Info("Fetcher service started successfully")
 
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
@@ -87,9 +94,22 @@ func (a *App) MustRun() {
 }
 
 func (a *App) mustStop() {
+	const fnName = "fetcher app: must stop"
+
 	a.log.Info("Fetcher service is finishing")
 
-	a.infoSender.Close()
+	if err := a.infoSender.Close(); err == nil {
+		a.log.Debug("Info sender closed", a.log.Attr("func", fnName))
+	}
 
 	a.log.Info("Fetcher stopped gracefully")
+}
+
+func (a *App) mustPrintCfg() {
+	cfgBytes, err := json.MarshalIndent(a.cfg, "", " ")
+	if err != nil {
+		a.log.Error("Can't marshal config", a.log.Attr("error", err))
+		os.Exit(1)
+	}
+	a.log.Debug(string(cfgBytes))
 }

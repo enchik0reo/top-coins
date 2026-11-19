@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fetcher-config
+data:
+  ENVIRONMENT: "debug"
+  TIMEOUT: "5s"
+  FETCHER_SENDER: "kafka"
+  FETCH_TICKER: "30s"
+  FETCHER_NAME: "crypto-fetcher"
+  KAFKA_BROKERS: "172.17.0.1:9092"
+  KAFKA_INFO_TOPIC: "crypto.info"
+  KAFKA_TIMEOUT: "10s"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fetcher
+  labels:
+    app: fetcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fetcher
+  template:
+    metadata:
+      labels:
+        app: fetcher
+    spec:
+      containers:
+      - name: fetcher
+        image: crypto-fetcher:latest
+        imagePullPolicy: Never
+        envFrom:
+        - configMapRef:
+            name: fetcher-config

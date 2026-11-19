@@ -71,6 +71,8 @@ func (c *CoinbaseClient) FetchInfo(ctx context.Context) (models.CoinInfo, error)
 		return models.CoinInfo{}, errors.Wrap(err, fnName)
 	}
 
+	c.log.Debug("Coin info fetched", c.log.Attr("func", fnName), c.log.Attr("source", models.Coinbase), c.log.Attr("price", coinInfo.Price))
+
 	return coinInfo, nil
 }
 

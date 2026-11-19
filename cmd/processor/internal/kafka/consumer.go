@@ -42,12 +42,15 @@ func (c *KafkaConsumer) StartConsume(ctx context.Context) (<-chan *CoinMessage, 
 	const fnName = "kafka consumer: consume"
 	outChan := make(chan *CoinMessage, 100)
 
+	c.log.Debug("Kafka consumer started", c.log.Attr("func", fnName), c.log.Attr("topic", c.cfg.CoinInfoTopic))
+
 	go func() {
 		defer close(outChan)
 
 		for {
 			select {
 			case <-ctx.Done():
+				c.log.Debug("Kafka consumer stopped", c.log.Attr("func", fnName))
 				return
 			default:
 				msg, err := c.reader.FetchMessage(ctx)
@@ -64,6 +67,7 @@ func (c *KafkaConsumer) StartConsume(ctx context.Context) (<-chan *CoinMessage, 
 
 				select {
 				case <-ctx.Done():
+					c.log.Debug("Kafka consumer stopped", c.log.Attr("func", fnName))
 					return
 				case outChan <- coinMsg:
 				}
@@ -89,6 +93,8 @@ func (c *KafkaConsumer) mustProcessMessage(msg kafka.Message) *CoinMessage {
 			},
 		}
 	}
+
+	c.log.Debug("Kafka message decoded", c.log.Attr("func", fnName), c.log.Attr("coins", len(coinsInfo)), c.log.Attr("offset", msg.Offset))
 
 	if len(coinsInfo) == 0 {
 		return &CoinMessage{

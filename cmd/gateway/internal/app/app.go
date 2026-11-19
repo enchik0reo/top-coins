@@ -2,9 +2,8 @@ package app
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -39,11 +38,16 @@ func New() *App {
 		log: log,
 	}
 
-	client, err := grpcclient.NewClient(cfg.ApiServer.Address)
+	app.mustPrintCfg()
+
+	client, err := grpcclient.NewClient(cfg.GRPCClient.Address, app.log)
 	if err != nil {
 		app.log.Error("Can't create new client", app.log.Attr("error", err))
 		os.Exit(1)
 	}
+
+	app.client = client
+	app.log.Debug("gRPC client created", app.log.Attr("func", fnName))
 
 	router := handler.NewCustomRouter(client, cfg.ApiServer, app.log)
 	srv := server.New(router, &cfg.ApiServer, app.log)
@@ -58,14 +62,14 @@ func (a *App) MustRun() {
 	a.log.Info("Gateway service is running", "env", a.cfg.Env)
 
 	go func() {
-		err := a.httpServer.Start()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := a.httpServer.Start(); err != nil {
 			a.log.Error("Failed over working api sever", a.log.Attr("error", err), a.log.Attr("func", fnName))
 			os.Exit(1)
 		}
 	}()
+	a.log.Debug("HTTP server started successfully", a.log.Attr("func", fnName))
 
-	a.log.Info("Gateway service runs")
+	a.log.Info("Gateway service started successfully")
 
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
@@ -79,16 +83,29 @@ func (a *App) mustStop() {
 
 	a.log.Info("Gateway service is finishing")
 
-	if err := a.client.Close(); err != nil {
-		a.log.Error("Failed to close client session", a.log.Attr("error", err), a.log.Attr("func", fnName))
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.CtxTimeout)
 	defer cancel()
 
 	if err := a.httpServer.Stop(ctx); err != nil {
 		a.log.Error("Failed to close server session", a.log.Attr("error", err), a.log.Attr("func", fnName))
+	} else {
+		a.log.Debug("HTTP server stopped", a.log.Attr("func", fnName))
+	}
+
+	if err := a.client.Close(); err != nil {
+		a.log.Error("Failed to close client session", a.log.Attr("error", err), a.log.Attr("func", fnName))
+	} else {
+		a.log.Debug("gRPC client closed", a.log.Attr("func", fnName))
 	}
 
 	a.log.Info("Gateway stopped gracefully")
+}
+
+func (a *App) mustPrintCfg() {
+	cfgBytes, err := json.MarshalIndent(a.cfg, "", " ")
+	if err != nil {
+		a.log.Error("Can't marshal config", a.log.Attr("error", err))
+		os.Exit(1)
+	}
+	a.log.Debug(string(cfgBytes))
 }

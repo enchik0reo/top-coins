@@ -7,6 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	protov1 "github.com/top-coins/pkg/api/proto/v1"
+	"github.com/top-coins/pkg/logger"
 	"github.com/top-coins/pkg/models"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -18,9 +19,10 @@ var ErrEmptyResponce = fmt.Errorf("responce is empty")
 type Client struct {
 	conn       *grpc.ClientConn
 	grpcClient protov1.CoinInfoServiceClient
+	log        *logger.CustomLogger
 }
 
-func NewClient(addr string) (*Client, error) {
+func NewClient(addr string, log *logger.CustomLogger) (*Client, error) {
 	const fnName = "new client"
 
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -31,6 +33,7 @@ func NewClient(addr string) (*Client, error) {
 	return &Client{
 		conn:       conn,
 		grpcClient: protov1.NewCoinInfoServiceClient(conn),
+		log:        log,
 	}, nil
 }
 
@@ -61,6 +64,8 @@ func (c *Client) CoinLastInfo(ctx context.Context, name string) (models.CoinInfo
 	if pbCoin == nil {
 		return models.CoinInfo{}, errors.Wrap(ErrEmptyResponce, fnName)
 	}
+
+	c.log.Debug("Last coin info received", c.log.Attr("func", fnName), c.log.Attr("name", name))
 
 	return models.CoinInfo{
 		ID:          pbCoin.GetId(),
@@ -103,6 +108,8 @@ func (c *Client) CoinHistory(ctx context.Context, name string, since time.Time) 
 			RequestTime: pbCoin.GetRequestTime().AsTime(),
 		})
 	}
+
+	c.log.Debug("Coin history received", c.log.Attr("func", fnName), c.log.Attr("name", name), c.log.Attr("count", len(res)))
 
 	return res, nil
 }
