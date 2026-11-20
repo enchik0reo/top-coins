@@ -23,6 +23,15 @@ const (
 	BitCoin CoinName = "BTC"
 )
 
+func (c CoinName) IsValid() bool {
+	switch c {
+	case BitCoin:
+		return true
+	default:
+		return false
+	}
+}
+
 type CoinCurrency string
 
 const (

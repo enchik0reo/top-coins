@@ -33,7 +33,7 @@ spec:
         image: crypto-gateway:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 31080
+        - containerPort: 8080
         envFrom:
         - configMapRef:
             name: gateway-config
@@ -44,10 +44,10 @@ kind: Service
 metadata:
   name: gateway-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: gateway
   ports:
-  - port: 8080
-    targetPort: 31080
-    nodePort: 30080
+    - name: http
+      port: 8080
+      targetPort: 8080

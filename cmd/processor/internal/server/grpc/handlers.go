@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *GRPCServer) GetCoinInfo(ctx context.Context, req *protov1.GetCoinLastInfoRequest) (*protov1.GetCoinLastInfoResponse, error) {
+func (s *GRPCServer) GetCoinLastInfo(ctx context.Context, req *protov1.GetCoinLastInfoRequest) (*protov1.GetCoinLastInfoResponse, error) {
 	const fnName = "grpc server: get coin info"
 
 	coin, err := s.storage.GetCoinLastInfo(ctx, req.GetName())

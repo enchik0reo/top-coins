@@ -57,7 +57,7 @@ spec:
         image: crypto-processor:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 50052
+        - containerPort: 50051
         
         envFrom:
         - configMapRef:
@@ -86,4 +86,4 @@ spec:
     app: processor
   ports:
   - port: 50051
-    targetPort: 50052
+    targetPort: 50051

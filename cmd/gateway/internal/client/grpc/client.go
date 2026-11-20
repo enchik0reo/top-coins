@@ -17,9 +17,10 @@ import (
 var ErrEmptyResponce = fmt.Errorf("responce is empty")
 
 type Client struct {
-	conn       *grpc.ClientConn
+	conn *grpc.ClientConn
+	log  *logger.CustomLogger
+
 	grpcClient protov1.CoinInfoServiceClient
-	log        *logger.CustomLogger
 }
 
 func NewClient(addr string, log *logger.CustomLogger) (*Client, error) {
@@ -32,8 +33,8 @@ func NewClient(addr string, log *logger.CustomLogger) (*Client, error) {
 
 	return &Client{
 		conn:       conn,
-		grpcClient: protov1.NewCoinInfoServiceClient(conn),
 		log:        log,
+		grpcClient: protov1.NewCoinInfoServiceClient(conn),
 	}, nil
 }
 

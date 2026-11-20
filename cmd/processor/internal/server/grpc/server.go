@@ -14,6 +14,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+var _ protov1.CoinInfoServiceServer = (*GRPCServer)(nil)
+
 type storage interface {
 	GetCoinLastInfo(ctx context.Context, name string) (models.CoinInfo, error)
 	GetCoinHistory(ctx context.Context, name string, sinceTime time.Time) ([]models.CoinInfo, error)

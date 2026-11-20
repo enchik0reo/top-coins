@@ -92,9 +92,31 @@ tasks:
       - kind load docker-image crypto-gateway:latest --name crypto-cluster
       - kind load docker-image crypto-processor:latest --name crypto-cluster
 
+  k8s:ingress:up:
+    desc: "Install (if needed) and wait for ingress-nginx controller in kind cluster"
+    deps: [k8s:cluster:up]
+    status:
+      - kubectl get deployment ingress-nginx-controller -n ingress-nginx
+      - >
+        kubectl wait --namespace ingress-nginx
+        --for=condition=ready pod
+        --selector=app.kubernetes.io/component=controller
+        --timeout=5s
+    cmds:
+      - kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+      - >
+        kubectl wait --namespace ingress-nginx
+        --for=condition=ready pod
+        --selector=app.kubernetes.io/component=controller
+        --timeout=90s
+
+  k8s:ingress:down:
+    desc: "Remove ingress-nginx controller from kind cluster"
+    cmd: kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml --ignore-not-found=true
+
   k8s:up:
-    desc: "Deploy applications into the running cluster"
-    deps: [k8s:load]
+    desc: "Deploy ingress controller and applications into the running cluster"
+    deps: [k8s:load, k8s:ingress:up]
     cmd: kubectl apply -f deployments/k8s/
 
   k8s:down:
