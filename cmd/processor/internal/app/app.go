@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
@@ -42,8 +41,12 @@ func New() *App {
 
 	app.cfg = cfg
 	app.log = logger.NewSlogLogger(cfg.Env)
-
-	app.mustPrintCfg()
+	cfgStr, err := app.cfg.PrettyStr()
+	if err != nil {
+		app.log.Error("Can't create pretty config", app.log.Attr("error", err), app.log.Attr("func", fnName))
+		os.Exit(1)
+	}
+	app.log.Info("Config loaded", app.log.Attr("func", fnName), app.log.Attr("config", cfgStr))
 
 	app.db = db.NewDatabase(&cfg.Postgres, app.log)
 	app.cache = cache.NewCache(cfg.Redis, app.log)
@@ -153,13 +156,4 @@ func (a *App) mustStop(ctx context.Context) {
 	}
 
 	a.log.Info("Processor app stopped gracefully")
-}
-
-func (a *App) mustPrintCfg() {
-	cfgBytes, err := json.MarshalIndent(a.cfg, "", " ")
-	if err != nil {
-		a.log.Error("Can't marshal config", a.log.Attr("error", err))
-		os.Exit(1)
-	}
-	a.log.Debug(string(cfgBytes))
 }

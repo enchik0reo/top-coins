@@ -5,6 +5,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/ilyakaznacheev/cleanenv"
+	"gopkg.in/yaml.v3"
 
 	"github.com/top-coins/pkg/models"
 )
@@ -46,4 +47,15 @@ func NewConfigFromEnv() (*FetcherConfig, error) {
 	}
 
 	return &cfg, nil
+}
+
+func (c *FetcherConfig) PrettyStr() (string, error) {
+	const fnName = "fetcher config: pretty str"
+
+	b, err := yaml.Marshal(c)
+	if err != nil {
+		return "", errors.Wrap(err, fnName)
+	}
+
+	return string(b), nil
 }

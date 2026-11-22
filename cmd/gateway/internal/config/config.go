@@ -5,6 +5,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/ilyakaznacheev/cleanenv"
+	"gopkg.in/yaml.v3"
 
 	"github.com/top-coins/pkg/models"
 )
@@ -38,4 +39,15 @@ func NewConfigFromEnv() (GatewayConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func (c *GatewayConfig) PrettyStr() (string, error) {
+	const fnName = "gateway config: pretty str"
+
+	b, err := yaml.Marshal(c)
+	if err != nil {
+		return "", errors.Wrap(err, fnName)
+	}
+
+	return string(b), nil
 }

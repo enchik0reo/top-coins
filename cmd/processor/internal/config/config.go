@@ -5,6 +5,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/ilyakaznacheev/cleanenv"
+	"gopkg.in/yaml.v3"
 
 	"github.com/top-coins/pkg/models"
 )
@@ -66,4 +67,15 @@ func NewConfigFromEnv() (*ProcessorConfig, error) {
 	}
 
 	return &cfg, nil
+}
+
+func (c *ProcessorConfig) PrettyStr() (string, error) {
+	const fnName = "processor config: pretty str"
+
+	b, err := yaml.Marshal(c)
+	if err != nil {
+		return "", errors.Wrap(err, fnName)
+	}
+
+	return string(b), nil
 }
