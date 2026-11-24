@@ -3,7 +3,6 @@ version: '3'
 dotenv: ['.env']
 
 # --- infra ---
-
 tasks:
   infra:up:
     desc: "Start infrastructure in docker compose (PostgreSQL, Redis, Kafka)"
@@ -40,7 +39,6 @@ tasks:
     cmd: docker compose -f deployments/docker-compose.infra.yml down -v
 
 # --- contracts ---
-
   proto:
     desc: "Generate Go Protobuf contract"
     cmds:
@@ -51,7 +49,6 @@ tasks:
       - pkg/api/proto/**/*.go
 
 # --- app images ---
-
   docker:build:
     desc: "Build all services Docker images"
     cmds: 
@@ -75,50 +72,90 @@ tasks:
       - docker build -f cmd/processor/Dockerfile -t crypto-processor:latest .
 
 # --- k8s ---
-
   k8s:cluster:up:
-    desc: "Create empty local kind cluster using config"
-    cmd: kind create cluster --name crypto-cluster --config deployments/kind-cluster-config.yaml || true
+    desc: "Create local kind cluster if not already running"
+    status:
+      - kind get clusters 2>/dev/null | grep -qx "crypto-cluster"
+    cmd: kind create cluster --name crypto-cluster --config deployments/kind-cluster-config.yaml
 
   k8s:cluster:down:
     desc: "Delete local kind cluster"
     cmd: kind delete cluster --name crypto-cluster
 
+  k8s:cluster:reset:
+    desc: "Recreate kind cluster and redeploy everything from scratch"
+    cmds:
+      - task: k8s:cluster:down
+      - task: k8s:up
+
   k8s:load:
-    desc: "Load local Docker images into kind cluster"
+    desc: "Build and load local Docker images into kind cluster when sources change"
     deps: [k8s:cluster:up, docker:build]
+    sources:
+      - cmd/**/*
+      - pkg/**/*
+      - go.mod
+      - go.sum
+      - Dockerfile*
+    generates:
+      - .task/kind-images.loaded
     cmds:
       - kind load docker-image crypto-fetcher:latest --name crypto-cluster
       - kind load docker-image crypto-gateway:latest --name crypto-cluster
       - kind load docker-image crypto-processor:latest --name crypto-cluster
+      - mkdir -p .task && date +%s > .task/kind-images.loaded
 
-  k8s:ingress:up:
-    desc: "Install (if needed) and wait for ingress-nginx controller in kind cluster"
+  k8s:envoy-gateway:up:
+    desc: "Install (if needed) and wait for Envoy Gateway controller in kind cluster"
     deps: [k8s:cluster:up]
+    vars:
+      MANIFEST: .cache/envoy-gateway-v1.10.0.yaml
     status:
-      - kubectl get deployment ingress-nginx-controller -n ingress-nginx
-      - >
-        kubectl wait --namespace ingress-nginx
-        --for=condition=ready pod
-        --selector=app.kubernetes.io/component=controller
-        --timeout=5s
+      - kubectl get deployment envoy-gateway -n envoy-gateway-system >/dev/null 2>&1
+      - kubectl wait --namespace envoy-gateway-system --for=condition=Available deployment/envoy-gateway --timeout=5s >/dev/null 2>&1
     cmds:
-      - kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+      - mkdir -p .cache
       - >
-        kubectl wait --namespace ingress-nginx
-        --for=condition=ready pod
-        --selector=app.kubernetes.io/component=controller
-        --timeout=90s
+        test -f {{.MANIFEST}} || curl -fsSL
+        https://github.com/envoyproxy/gateway/releases/download/v1.10.0/install.yaml
+        -o {{.MANIFEST}}
+      - kubectl apply --server-side -f {{.MANIFEST}}
+      - >
+        kubectl wait --namespace envoy-gateway-system
+        --for=condition=Available deployment/envoy-gateway
+        --timeout=5m
 
-  k8s:ingress:down:
-    desc: "Remove ingress-nginx controller from kind cluster"
-    cmd: kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml --ignore-not-found=true
+  k8s:envoy-gateway:down:
+    desc: "Delete Envoy Gateway controller in kind cluster"
+    vars:
+      MANIFEST: .cache/envoy-gateway-v1.10.0.yaml
+    cmd: >
+      kubectl delete --ignore-not-found=true -f
+      https://github.com/envoyproxy/gateway/releases/download/v1.10.0/install.yaml
+      && rm -f {{.MANIFEST}}
 
   k8s:up:
-    desc: "Deploy ingress controller and applications into the running cluster"
-    deps: [k8s:load, k8s:ingress:up]
-    cmd: kubectl apply -f deployments/k8s/
+    desc: "Deploy Gateway API resources and applications into kind cluster"
+    deps: [k8s:load, k8s:envoy-gateway:up]
+    cmds:
+      - kubectl apply -f deployments/k8s/
+      - >
+        kubectl wait --for=condition=Programmed gateway/main-gateway
+        --timeout=2m
+
+  k8s:restart:
+    desc: "Fast reload: load updated images and restart app deployments"
+    deps: [k8s:load]
+    cmds:
+      - kubectl rollout restart deployment/crypto-gateway deployment/crypto-processor deployment/crypto-fetcher 2>/dev/null || true
+      - kubectl rollout status deployment/crypto-gateway --timeout=2m
+
+  k8s:smoke:
+    desc: "Check HTTP endpoint through Envoy Gateway on localhost:80"
+    cmd: curl -fsS -i "http://127.0.0.1/api/v1/newest_info?name=BTC"
 
   k8s:down:
     desc: "Delete all Kubernetes manifests from kind cluster"
-    cmd: kubectl delete -f deployments/k8s/ --ignore-not-found=true
+    cmds:
+      - kubectl delete -f deployments/k8s/ --ignore-not-found=true
+      - rm -f .task/kind-images.loaded
